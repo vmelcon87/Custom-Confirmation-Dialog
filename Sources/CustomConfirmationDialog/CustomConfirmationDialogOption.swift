@@ -10,7 +10,7 @@ public struct CustomConfirmationDialogOption: Identifiable {
     // MARK: Properties
 
     /// Stable identity for diffing and rendering updates.
-    let id: UUID
+    public let id: UUID
 
     /// Optional payload consumed by the presenter to open `UIActivityViewController`.
     ///
