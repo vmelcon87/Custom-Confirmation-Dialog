@@ -101,8 +101,8 @@ public struct CustomConfirmationDialog: View {
 
                     ScrollView {
                         LazyVStack(spacing: 0) {
-                            ForEach(Array(options.enumerated()), id: \.element.id) { index, option in
-                                option.makeRow(onTap: onOptionTap)
+                            ForEach(options.indices, id: \.self) { index in
+                                options[index].makeRow(onTap: onOptionTap)
 
                                 if index < options.count - 1 {
                                     Divider()
