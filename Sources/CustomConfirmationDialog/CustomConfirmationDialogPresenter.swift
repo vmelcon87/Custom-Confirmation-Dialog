@@ -95,7 +95,7 @@ private struct CustomConfirmationDialogPresenter: ViewModifier {
 
 // MARK: - View Extension
 
-extension View {
+public extension View {
     /// Presents a custom confirmation dialog overlay.
     ///
     /// This API centralizes overlay composition, transition and dismissal behavior.
@@ -108,7 +108,7 @@ extension View {
     ///   - dismissOnBackgroundTap: Whether tapping the dimmed backdrop dismisses the dialog.
     ///   - onCancel: Callback executed when cancel is tapped.
     /// - Returns: A view capable of showing ``CustomConfirmationDialog`` as overlay.
-    func customConfirmationDialog(
+    public func customConfirmationDialog(
         isPresented: Binding<Bool>,
         title: String? = nil,
         options: [CustomConfirmationDialogOption],
@@ -139,7 +139,7 @@ extension View {
     ///   - onSelect: Callback executed with the selected source value.
     ///   - onCancel: Callback executed when cancel is tapped.
     /// - Returns: A view capable of showing ``CustomConfirmationDialog`` as overlay.
-    func customConfirmationDialog(
+    public func customConfirmationDialog(
         isPresented: Binding<Bool>,
         title: String? = nil,
         source: [String],

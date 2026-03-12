@@ -6,7 +6,7 @@ import SwiftUI
 ///
 /// Use the action initializer for regular callbacks, and one of the share initializers
 /// when the row should open the native system share sheet managed by the presenter.
-struct CustomConfirmationDialogOption: Identifiable {
+public struct CustomConfirmationDialogOption: Identifiable {
     // MARK: Properties
 
     /// Stable identity for diffing and rendering updates.
@@ -28,7 +28,7 @@ struct CustomConfirmationDialogOption: Identifiable {
     ///   - id: Stable identifier for list diffing.
     ///   - title: Visible label for the row.
     ///   - action: Callback executed after the presenter tap hook.
-    init(
+    public init(
         id: UUID = UUID(),
         title: String,
         action: @escaping () -> Void
@@ -60,7 +60,7 @@ struct CustomConfirmationDialogOption: Identifiable {
     ///   - subject: Reserved for API compatibility with `ShareLink` style usage.
     ///   - message: Reserved for API compatibility with `ShareLink` style usage.
     ///   - onSelect: Optional callback fired when the row is tapped.
-    init(
+    public init(
         id: UUID = UUID(),
         title: String,
         shareText text: String,
@@ -95,7 +95,7 @@ struct CustomConfirmationDialogOption: Identifiable {
     ///   - subject: Reserved for API compatibility with `ShareLink` style usage.
     ///   - message: Reserved for API compatibility with `ShareLink` style usage.
     ///   - onSelect: Optional callback fired when the row is tapped.
-    init(
+    public init(
         id: UUID = UUID(),
         title: String,
         shareURL url: URL,

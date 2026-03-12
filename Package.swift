@@ -16,6 +16,11 @@ let package = Package(
         .target(
             name: "CustomConfirmationDialog",
             path: "Sources/CustomConfirmationDialog"
+        ),
+        .testTarget(
+            name: "CustomConfirmationDialogConsumerCompileTests",
+            dependencies: ["CustomConfirmationDialog"],
+            path: "Tests/CustomConfirmationDialogConsumerCompileTests"
         )
     ]
 )
