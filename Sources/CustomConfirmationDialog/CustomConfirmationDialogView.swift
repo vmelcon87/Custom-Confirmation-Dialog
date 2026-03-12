@@ -1,37 +1,53 @@
 import SwiftUI
 
-/// A custom bottom-sheet style confirmation dialog that mimics the system action sheet look.
+// MARK: - Custom Confirmation Dialog
+
+/// A bottom-sheet styled confirmation dialog that mimics the system action-sheet layout.
 ///
-/// The dialog shows an optional title, a list of selectable options, and a dedicated cancel button.
-/// It can grow up to half screen height or full available height depending on `useFullHeight`.
-/// When content exceeds the configured maximum height, scrolling is enabled automatically.
-public struct CustomConfirmationDialog: View {
-    /// Optional title displayed at the top of the dialog.
-    public let title: String?
-    /// Ordered rows rendered as dialog options.
-    public let options: [CustomConfirmationDialogOption]
-    /// Controls whether the dialog can grow to full height or half height.
-    public let useFullHeight: Bool
-    /// Callback fired when the cancel button is tapped.
-    public let onCancel: () -> Void
+/// The dialog renders:
+/// - an optional title section,
+/// - a list of selectable options,
+/// - and a dedicated cancel button.
+///
+/// Height behavior is controlled by `useFullHeight`:
+/// - `false`: options area grows up to half of available height.
+/// - `true`: options area can grow up to full available height.
+///
+/// Once the options exceed the configured maximum, vertical scrolling is enabled automatically.
+struct CustomConfirmationDialog: View {
+    // MARK: Properties
 
-    private let onOptionTap: () -> Void
+    /// Optional title displayed at the top of the options container.
+    let title: String?
 
-    /// Creates a custom confirmation dialog with typed options.
+    /// Ordered rows rendered inside the options list.
+    let options: [CustomConfirmationDialogOption]
+
+    /// Height strategy used to compute the maximum list area.
+    let useFullHeight: Bool
+
+    /// Callback executed when user taps cancel.
+    let onCancel: () -> Void
+
+    /// Presenter hook called when a row is selected.
+    private let onOptionTap: (CustomConfirmationDialogOption) -> Void
+
+    // MARK: Initializers
+
+    /// Creates a dialog using typed option rows.
     ///
     /// - Parameters:
-    ///   - title: Optional title displayed above the options list. Pass `nil` or an empty value to hide it.
-    ///   - options: Rows displayed in the dialog.
-    ///   - useFullHeight: If `true`, the dialog can grow up to the full available height.
-    ///     If `false`, it grows up to half the available height.
-    ///   - onCancel: Called when the user taps the cancel button.
-    ///   - onOptionTap: Internal hook used by the presenter to dismiss before row actions.
-    public init(
+    ///   - title: Optional title. Pass `nil` or whitespace-only text to hide the title area.
+    ///   - options: Rows displayed by the dialog.
+    ///   - useFullHeight: `true` enables growth up to full available height; `false` caps at half height.
+    ///   - onCancel: Callback invoked when cancel is tapped.
+    ///   - onOptionTap: Internal presenter callback invoked before/along option action handling.
+    init(
         title: String? = nil,
         options: [CustomConfirmationDialogOption],
         useFullHeight: Bool,
         onCancel: @escaping () -> Void,
-        onOptionTap: @escaping () -> Void = {}
+        onOptionTap: @escaping (CustomConfirmationDialogOption) -> Void = { _ in }
     ) {
         self.title = title
         self.options = options
@@ -40,15 +56,15 @@ public struct CustomConfirmationDialog: View {
         self.onOptionTap = onOptionTap
     }
 
-    /// Backward-compatible initializer based on string source and select callback.
+    /// Backward-compatible initializer based on source strings.
     ///
     /// - Parameters:
-    ///   - title: Optional title displayed above the options list.
-    ///   - source: String rows displayed in the dialog.
-    ///   - useFullHeight: If `true`, the dialog can grow up to the full available height.
-    ///   - onSelect: Called when any row is tapped.
-    ///   - onCancel: Called when the user taps the cancel button.
-    public init(
+    ///   - title: Optional title displayed above options.
+    ///   - source: Raw string rows transformed into option models.
+    ///   - useFullHeight: `true` enables growth up to full available height; `false` caps at half height.
+    ///   - onSelect: Callback invoked with the selected source value.
+    ///   - onCancel: Callback invoked when cancel is tapped.
+    init(
         title: String? = nil,
         source: [String],
         useFullHeight: Bool,
@@ -67,7 +83,9 @@ public struct CustomConfirmationDialog: View {
         )
     }
 
-    public var body: some View {
+    // MARK: Body
+
+    var body: some View {
         GeometryReader { proxy in
             let availableHeight = max(proxy.size.height, 0)
             let maxDialogHeight = useFullHeight ? availableHeight : availableHeight * 0.5
@@ -102,7 +120,10 @@ public struct CustomConfirmationDialog: View {
                     ScrollView {
                         LazyVStack(spacing: 0) {
                             ForEach(options.indices, id: \.self) { index in
-                                options[index].makeRow(onTap: onOptionTap)
+                                let option = options[index]
+                                option.makeRow {
+                                    onOptionTap(option)
+                                }
 
                                 if index < options.count - 1 {
                                     Divider()

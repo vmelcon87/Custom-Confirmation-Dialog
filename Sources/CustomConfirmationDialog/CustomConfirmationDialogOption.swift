@@ -1,25 +1,40 @@
 import SwiftUI
 
-/// Represents a row displayed by ``CustomConfirmationDialog``.
+// MARK: - Option Model
+
+/// Describes a single selectable row rendered by ``CustomConfirmationDialog``.
 ///
-/// Use action options for regular callbacks and share options when you want to use native `ShareLink` behavior.
-public struct CustomConfirmationDialogOption: Identifiable {
-    /// Stable identity used for list diffing.
-    public let id: UUID
+/// Use the action initializer for regular callbacks, and one of the share initializers
+/// when the row should open the native system share sheet managed by the presenter.
+struct CustomConfirmationDialogOption: Identifiable {
+    // MARK: Properties
+
+    /// Stable identity for diffing and rendering updates.
+    let id: UUID
+
+    /// Optional payload consumed by the presenter to open `UIActivityViewController`.
+    ///
+    /// `nil` means the option is a standard action row.
+    let shareItems: [Any]?
+
+    /// Internal row factory that injects presenter-level tap behavior.
     private let rowBuilder: (_ onTap: @escaping () -> Void) -> AnyView
 
-    /// Creates an action row.
+    // MARK: Initializers
+
+    /// Creates a standard action row.
     ///
     /// - Parameters:
-    ///   - id: Stable identifier for diffing and updates.
-    ///   - title: Text displayed in the row.
-    ///   - action: Callback triggered when the row is tapped.
-    public init(
+    ///   - id: Stable identifier for list diffing.
+    ///   - title: Visible label for the row.
+    ///   - action: Callback executed after the presenter tap hook.
+    init(
         id: UUID = UUID(),
         title: String,
         action: @escaping () -> Void
     ) {
         self.id = id
+        self.shareItems = nil
         self.rowBuilder = { onTap in
             AnyView(
                 Button {
@@ -33,16 +48,19 @@ public struct CustomConfirmationDialogOption: Identifiable {
         }
     }
 
-    /// Creates a share row powered by native `ShareLink`.
+    /// Creates a share row using a text payload.
+    ///
+    /// This initializer keeps a `ShareLink`-like API at call-site level, but rendering is
+    /// handled as a regular button and the native share UI is presented by the presenter.
     ///
     /// - Parameters:
-    ///   - id: Stable identifier for diffing and updates.
-    ///   - title: Text displayed in the row.
-    ///   - text: Share payload.
-    ///   - subject: Optional subject for supported targets.
-    ///   - message: Optional message for supported targets.
+    ///   - id: Stable identifier for list diffing.
+    ///   - title: Visible label for the row.
+    ///   - text: Text payload to share.
+    ///   - subject: Reserved for API compatibility with `ShareLink` style usage.
+    ///   - message: Reserved for API compatibility with `ShareLink` style usage.
     ///   - onSelect: Optional callback fired when the row is tapped.
-    public init(
+    init(
         id: UUID = UUID(),
         title: String,
         shareText text: String,
@@ -51,30 +69,33 @@ public struct CustomConfirmationDialogOption: Identifiable {
         onSelect: (() -> Void)? = nil
     ) {
         self.id = id
-        self.rowBuilder = { _ in
+        self.shareItems = [text]
+        self.rowBuilder = { onTap in
             AnyView(
-                ShareLink(item: text, subject: subject, message: message) {
+                Button {
+                    onTap()
+                    onSelect?()
+                } label: {
                     DialogRowLabel(title: title)
                 }
-                .simultaneousGesture(
-                    TapGesture().onEnded {
-                        onSelect?()
-                    }
-                )
+                .buttonStyle(.plain)
             )
         }
     }
 
-    /// Creates a share row powered by native `ShareLink` for URL payloads.
+    /// Creates a share row using a URL payload.
+    ///
+    /// This initializer keeps a `ShareLink`-like API at call-site level, but rendering is
+    /// handled as a regular button and the native share UI is presented by the presenter.
     ///
     /// - Parameters:
-    ///   - id: Stable identifier for diffing and updates.
-    ///   - title: Text displayed in the row.
-    ///   - url: URL payload.
-    ///   - subject: Optional subject for supported targets.
-    ///   - message: Optional message for supported targets.
+    ///   - id: Stable identifier for list diffing.
+    ///   - title: Visible label for the row.
+    ///   - url: URL payload to share.
+    ///   - subject: Reserved for API compatibility with `ShareLink` style usage.
+    ///   - message: Reserved for API compatibility with `ShareLink` style usage.
     ///   - onSelect: Optional callback fired when the row is tapped.
-    public init(
+    init(
         id: UUID = UUID(),
         title: String,
         shareURL url: URL,
@@ -83,26 +104,36 @@ public struct CustomConfirmationDialogOption: Identifiable {
         onSelect: (() -> Void)? = nil
     ) {
         self.id = id
-        self.rowBuilder = { _ in
+        self.shareItems = [url]
+        self.rowBuilder = { onTap in
             AnyView(
-                ShareLink(item: url, subject: subject, message: message) {
+                Button {
+                    onTap()
+                    onSelect?()
+                } label: {
                     DialogRowLabel(title: title)
                 }
-                .simultaneousGesture(
-                    TapGesture().onEnded {
-                        onSelect?()
-                    }
-                )
+                .buttonStyle(.plain)
             )
         }
     }
 
+    // MARK: Internal API
+
+    /// Builds the row view while injecting the presenter-level tap hook.
+    ///
+    /// - Parameter onTap: Presenter callback used for dialog-level behavior.
+    /// - Returns: A type-erased view for row rendering.
     func makeRow(onTap: @escaping () -> Void) -> AnyView {
         rowBuilder(onTap)
     }
 }
 
+// MARK: - Supporting Views
+
+/// Shared visual label used by action and share rows.
 private struct DialogRowLabel: View {
+    /// Text displayed in the row.
     let title: String
 
     var body: some View {
