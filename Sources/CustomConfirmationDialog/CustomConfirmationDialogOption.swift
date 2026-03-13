@@ -119,25 +119,29 @@ public struct CustomConfirmationDialogOption: Identifiable {
         }
     }
 
-    /// Creates a share row using a `Transferable` payload and native `ShareLink` behavior.
+    /// Creates a share row using a `Transferable` payload and custom preview.
     ///
     /// - Parameters:
     ///   - id: Stable identifier for list diffing.
     ///   - title: Visible label for the row.
     ///   - item: Transferable payload to share.
+    ///   - iconSystemName: Optional SF Symbol displayed alongside title in the row.
+    ///   - preview: Custom share preview shown by `ShareLink`.
     ///   - onSelect: Optional callback fired when the row is tapped.
-    public init<Item: Transferable>(
+    public init<Item: Transferable, PreviewImage: Transferable, PreviewIcon: Transferable>(
         id: UUID = UUID(),
         title: String,
         shareItem item: Item,
+        iconSystemName: String? = nil,
+        preview: SharePreview<PreviewImage, PreviewIcon>,
         onSelect: (() -> Void)? = nil
     ) {
         self.id = id
         self.shareItems = nil
         self.rowBuilder = { _ in
             AnyView(
-                ShareLink(item: item, preview: SharePreview(title)) {
-                    DialogRowLabel(title: title)
+                ShareLink(item: item, preview: preview) {
+                    DialogRowLabel(title: title, iconSystemName: iconSystemName)
                 }
                 .simultaneousGesture(
                     TapGesture().onEnded {
@@ -165,12 +169,25 @@ public struct CustomConfirmationDialogOption: Identifiable {
 private struct DialogRowLabel: View {
     /// Text displayed in the row.
     let title: String
+    /// Optional SF Symbol displayed next to title.
+    let iconSystemName: String?
+
+    init(title: String, iconSystemName: String? = nil) {
+        self.title = title
+        self.iconSystemName = iconSystemName
+    }
 
     var body: some View {
-        Text(title)
-            .font(.title3)
-            .foregroundStyle(.blue)
-            .frame(maxWidth: .infinity)
-            .frame(height: 56)
+        Group {
+            if let iconSystemName {
+                Label(title, systemImage: iconSystemName)
+            } else {
+                Text(title)
+            }
+        }
+        .font(.title3)
+        .foregroundStyle(.blue)
+        .frame(maxWidth: .infinity)
+        .frame(height: 56)
     }
 }
