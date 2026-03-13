@@ -161,6 +161,7 @@ If needed, you can still use the string-based overload:
 
 - The package intentionally includes its own presenter to avoid repeating overlay/transition code.
 - `ShareLink` rows are native SwiftUI components.
+- When `activityItems` contains image `Data` (for example QR PNG bytes), the package injects native share metadata so the sheet header shows the shared image preview.
 - If you use MVVM, route option callbacks into your ViewModel from each option closure.
 
 ## Versioning

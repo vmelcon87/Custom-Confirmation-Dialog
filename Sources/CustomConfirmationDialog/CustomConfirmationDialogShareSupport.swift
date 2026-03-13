@@ -1,5 +1,6 @@
 import SwiftUI
 import UIKit
+import LinkPresentation
 
 // MARK: - Share Support
 
@@ -72,7 +73,8 @@ struct ActivitySharePresenterHost: UIViewControllerRepresentable {
 
         guard let payload, uiViewController.presentedViewController == nil else { return }
 
-        let controller = UIActivityViewController(activityItems: payload.items, applicationActivities: nil)
+        let activityItems = ActivityShareItemNormalizer.normalize(payload.items)
+        let controller = UIActivityViewController(activityItems: activityItems, applicationActivities: nil)
         controller.modalPresentationStyle = .automatic
 
         if let popover = controller.popoverPresentationController {
@@ -94,5 +96,57 @@ struct ActivitySharePresenterHost: UIViewControllerRepresentable {
         }
 
         uiViewController.present(controller, animated: true)
+    }
+}
+
+// MARK: - Share Item Normalization
+
+/// Normalizes share items so image `Data` gets proper metadata preview in the native share sheet.
+private enum ActivityShareItemNormalizer {
+    /// Title used in the native share header when the payload is image data.
+    ///
+    /// This avoids falling back to the app name and makes QR sharing intent explicit.
+    private static let imageShareTitle = "Share QR Code"
+
+    /// Converts image `Data` payloads into `UIActivityItemSource` objects with metadata,
+    /// while leaving non-image payloads untouched.
+    static func normalize(_ items: [Any]) -> [Any] {
+        return items.map { item in
+            guard let data = item as? Data, let image = UIImage(data: data) else {
+                return item
+            }
+            return ImageActivityItemSource(image: image, title: imageShareTitle)
+        }
+    }
+}
+
+/// Item source used to provide image metadata preview (instead of app icon) in activity sheets.
+private final class ImageActivityItemSource: NSObject, UIActivityItemSource {
+    private let image: UIImage
+    private let title: String
+
+    init(image: UIImage, title: String) {
+        self.image = image
+        self.title = title
+        super.init()
+    }
+
+    func activityViewControllerPlaceholderItem(_ activityViewController: UIActivityViewController) -> Any {
+        image
+    }
+
+    func activityViewController(
+        _ activityViewController: UIActivityViewController,
+        itemForActivityType activityType: UIActivity.ActivityType?
+    ) -> Any? {
+        image
+    }
+
+    func activityViewControllerLinkMetadata(_ activityViewController: UIActivityViewController) -> LPLinkMetadata? {
+        let metadata = LPLinkMetadata()
+        metadata.title = title
+        metadata.iconProvider = NSItemProvider(object: image)
+        metadata.imageProvider = NSItemProvider(object: image)
+        return metadata
     }
 }

@@ -124,12 +124,15 @@ struct CustomConfirmationDialog: View {
                                 option.makeRow {
                                     onOptionTap(option)
                                 }
+                                .frame(maxWidth: .infinity)
+                                .contentShape(Rectangle())
 
                                 if index < options.count - 1 {
                                     Divider()
                                 }
                             }
                         }
+                        .frame(maxWidth: .infinity)
                     }
                     .scrollIndicators(.hidden)
                     .scrollDisabled(!shouldScroll)

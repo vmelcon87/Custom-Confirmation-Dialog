@@ -44,6 +44,8 @@ public struct CustomConfirmationDialogOption: Identifiable {
                 } label: {
                     DialogRowLabel(title: title)
                 }
+                .frame(maxWidth: .infinity)
+                .contentShape(Rectangle())
                 .buttonStyle(.plain)
             )
         }
@@ -79,6 +81,8 @@ public struct CustomConfirmationDialogOption: Identifiable {
                 } label: {
                     DialogRowLabel(title: title)
                 }
+                .frame(maxWidth: .infinity)
+                .contentShape(Rectangle())
                 .buttonStyle(.plain)
             )
         }
@@ -114,6 +118,8 @@ public struct CustomConfirmationDialogOption: Identifiable {
                 } label: {
                     DialogRowLabel(title: title)
                 }
+                .frame(maxWidth: .infinity)
+                .contentShape(Rectangle())
                 .buttonStyle(.plain)
             )
         }
@@ -148,6 +154,8 @@ public struct CustomConfirmationDialogOption: Identifiable {
                 } label: {
                     DialogRowLabel(title: title, iconSystemName: iconSystemName)
                 }
+                .frame(maxWidth: .infinity)
+                .contentShape(Rectangle())
                 .buttonStyle(.plain)
             )
         }
@@ -179,16 +187,20 @@ private struct DialogRowLabel: View {
     }
 
     var body: some View {
-        Group {
-            if let iconSystemName {
-                Label(title, systemImage: iconSystemName)
-            } else {
-                Text(title)
+        ZStack {
+            Group {
+                if let iconSystemName {
+                    Label(title, systemImage: iconSystemName)
+                } else {
+                    Text(title)
+                }
             }
+            .font(.title3)
+            .foregroundStyle(.blue)
         }
-        .font(.title3)
-        .foregroundStyle(.blue)
         .frame(maxWidth: .infinity)
         .frame(height: 56)
+        .contentShape(Rectangle())
+        .background(Color.clear)
     }
 }
