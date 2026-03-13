@@ -119,35 +119,36 @@ public struct CustomConfirmationDialogOption: Identifiable {
         }
     }
 
-    /// Creates a share row using a `Transferable` payload and custom preview.
+
+    /// Creates a share row using a `Transferable` payload routed through `UIActivityViewController`.
     ///
     /// - Parameters:
     ///   - id: Stable identifier for list diffing.
     ///   - title: Visible label for the row.
     ///   - item: Transferable payload to share.
+    ///   - activityItems: Items forwarded to `UIActivityViewController`.
+    ///     If omitted, it tries to forward `item` directly.
     ///   - iconSystemName: Optional SF Symbol displayed alongside title in the row.
-    ///   - preview: Custom share preview shown by `ShareLink`.
     ///   - onSelect: Optional callback fired when the row is tapped.
-    public init<Item: Transferable, PreviewImage: Transferable, PreviewIcon: Transferable>(
+    public init<Item: Transferable>(
         id: UUID = UUID(),
         title: String,
         shareItem item: Item,
+        activityItems: [Any]? = nil,
         iconSystemName: String? = nil,
-        preview: SharePreview<PreviewImage, PreviewIcon>,
         onSelect: (() -> Void)? = nil
     ) {
         self.id = id
-        self.shareItems = nil
-        self.rowBuilder = { _ in
+        self.shareItems = activityItems ?? [item]
+        self.rowBuilder = { onTap in
             AnyView(
-                ShareLink(item: item, preview: preview) {
+                Button {
+                    onTap()
+                    onSelect?()
+                } label: {
                     DialogRowLabel(title: title, iconSystemName: iconSystemName)
                 }
-                .simultaneousGesture(
-                    TapGesture().onEnded {
-                        onSelect?()
-                    }
-                )
+                .buttonStyle(.plain)
             )
         }
     }

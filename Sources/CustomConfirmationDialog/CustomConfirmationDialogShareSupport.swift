@@ -1,4 +1,5 @@
 import SwiftUI
+import UIKit
 
 // MARK: - Share Support
 
@@ -73,6 +74,17 @@ struct ActivitySharePresenterHost: UIViewControllerRepresentable {
 
         let controller = UIActivityViewController(activityItems: payload.items, applicationActivities: nil)
         controller.modalPresentationStyle = .automatic
+
+        if let popover = controller.popoverPresentationController {
+            popover.sourceView = uiViewController.view
+            popover.sourceRect = CGRect(
+                x: uiViewController.view.bounds.midX,
+                y: uiViewController.view.bounds.midY,
+                width: 1,
+                height: 1
+            )
+            popover.permittedArrowDirections = []
+        }
         controller.presentationController?.delegate = context.coordinator
         context.coordinator.reset()
 
