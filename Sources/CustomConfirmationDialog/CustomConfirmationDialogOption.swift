@@ -1,4 +1,5 @@
 import SwiftUI
+import CoreTransferable
 
 // MARK: - Option Model
 
@@ -114,6 +115,35 @@ public struct CustomConfirmationDialogOption: Identifiable {
                     DialogRowLabel(title: title)
                 }
                 .buttonStyle(.plain)
+            )
+        }
+    }
+
+    /// Creates a share row using a `Transferable` payload and native `ShareLink` behavior.
+    ///
+    /// - Parameters:
+    ///   - id: Stable identifier for list diffing.
+    ///   - title: Visible label for the row.
+    ///   - item: Transferable payload to share.
+    ///   - onSelect: Optional callback fired when the row is tapped.
+    public init<Item: Transferable>(
+        id: UUID = UUID(),
+        title: String,
+        shareItem item: Item,
+        onSelect: (() -> Void)? = nil
+    ) {
+        self.id = id
+        self.shareItems = nil
+        self.rowBuilder = { _ in
+            AnyView(
+                ShareLink(item: item, preview: SharePreview(title)) {
+                    DialogRowLabel(title: title)
+                }
+                .simultaneousGesture(
+                    TapGesture().onEnded {
+                        onSelect?()
+                    }
+                )
             )
         }
     }
